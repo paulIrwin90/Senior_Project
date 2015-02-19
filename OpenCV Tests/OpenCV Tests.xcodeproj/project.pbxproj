@@ -8,6 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		8479DF531A965D0200407235 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 8479DF521A965D0200407235 /* main.cpp */; };
+		8479DF5C1A966C0B00407235 /* libopencv_core.2.4.10.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8479DF591A966C0B00407235 /* libopencv_core.2.4.10.dylib */; };
+		8479DF5D1A966C0B00407235 /* libopencv_highgui.2.4.10.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8479DF5A1A966C0B00407235 /* libopencv_highgui.2.4.10.dylib */; };
+		8479DF5E1A966C0B00407235 /* libopencv_imgproc.2.4.10.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8479DF5B1A966C0B00407235 /* libopencv_imgproc.2.4.10.dylib */; };
+		8479DF611A968D5300407235 /* libopencv_calib3d.2.4.10.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8479DF5F1A968D5300407235 /* libopencv_calib3d.2.4.10.dylib */; };
+		8479DF621A968D5300407235 /* libopencv_contrib.2.4.10.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 8479DF601A968D5300407235 /* libopencv_contrib.2.4.10.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +30,11 @@
 /* Begin PBXFileReference section */
 		8479DF4F1A965D0200407235 /* OpenCV Tests */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "OpenCV Tests"; sourceTree = BUILT_PRODUCTS_DIR; };
 		8479DF521A965D0200407235 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		8479DF591A966C0B00407235 /* libopencv_core.2.4.10.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_core.2.4.10.dylib; path = "../../OpenCV_tutorial/opencv-2.4.10/build/lib/libopencv_core.2.4.10.dylib"; sourceTree = "<group>"; };
+		8479DF5A1A966C0B00407235 /* libopencv_highgui.2.4.10.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_highgui.2.4.10.dylib; path = "../../OpenCV_tutorial/opencv-2.4.10/build/lib/libopencv_highgui.2.4.10.dylib"; sourceTree = "<group>"; };
+		8479DF5B1A966C0B00407235 /* libopencv_imgproc.2.4.10.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_imgproc.2.4.10.dylib; path = "../../OpenCV_tutorial/opencv-2.4.10/build/lib/libopencv_imgproc.2.4.10.dylib"; sourceTree = "<group>"; };
+		8479DF5F1A968D5300407235 /* libopencv_calib3d.2.4.10.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_calib3d.2.4.10.dylib; path = "../../OpenCV_tutorial/opencv-2.4.10/build/lib/libopencv_calib3d.2.4.10.dylib"; sourceTree = "<group>"; };
+		8479DF601A968D5300407235 /* libopencv_contrib.2.4.10.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_contrib.2.4.10.dylib; path = "../../OpenCV_tutorial/opencv-2.4.10/build/lib/libopencv_contrib.2.4.10.dylib"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,6 +42,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8479DF621A968D5300407235 /* libopencv_contrib.2.4.10.dylib in Frameworks */,
+				8479DF611A968D5300407235 /* libopencv_calib3d.2.4.10.dylib in Frameworks */,
+				8479DF5C1A966C0B00407235 /* libopencv_core.2.4.10.dylib in Frameworks */,
+				8479DF5D1A966C0B00407235 /* libopencv_highgui.2.4.10.dylib in Frameworks */,
+				8479DF5E1A966C0B00407235 /* libopencv_imgproc.2.4.10.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -41,6 +56,11 @@
 		8479DF461A965D0200407235 = {
 			isa = PBXGroup;
 			children = (
+				8479DF5F1A968D5300407235 /* libopencv_calib3d.2.4.10.dylib */,
+				8479DF601A968D5300407235 /* libopencv_contrib.2.4.10.dylib */,
+				8479DF591A966C0B00407235 /* libopencv_core.2.4.10.dylib */,
+				8479DF5A1A966C0B00407235 /* libopencv_highgui.2.4.10.dylib */,
+				8479DF5B1A966C0B00407235 /* libopencv_imgproc.2.4.10.dylib */,
 				8479DF511A965D0200407235 /* OpenCV Tests */,
 				8479DF501A965D0200407235 /* Products */,
 			);
@@ -202,6 +222,13 @@
 		8479DF571A965D0200407235 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				FRAMEWORK_SEARCH_PATHS = /usr/local/lib;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"/Users/vegas_bballer/Documents/OpenCV_tutorial/opencv-2.4.10/build/lib",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -209,6 +236,13 @@
 		8479DF581A965D0200407235 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = YES;
+				FRAMEWORK_SEARCH_PATHS = /usr/local/lib;
+				HEADER_SEARCH_PATHS = /usr/local/include;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"/Users/vegas_bballer/Documents/OpenCV_tutorial/opencv-2.4.10/build/lib",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -232,6 +266,7 @@
 				8479DF581A965D0200407235 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
