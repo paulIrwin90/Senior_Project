@@ -6,8 +6,6 @@
 using namespace std;
 using namespace cv;
 
-
-
 int imageCap(int cam)
 {
     VideoCapture webcam(cam);
