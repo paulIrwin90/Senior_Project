@@ -30,12 +30,12 @@ void imageCap(int cam)
     
     destroyAllWindows();    // clean up screen
     
-    if (cam == 1)
+    if (cam == 0)
     {
         imwrite("/Users/vegas_bballer/Documents/rightSide.jpg", newFrame);
         cout << "Right side written to a file.\n";
     }
-    else if (cam == 2)
+    else if (cam == 1)
     {
         imwrite("/Users/vegas_bballer/Documents/leftSide.jpg", newFrame);
         cout << "Left side written to a file.\n";
