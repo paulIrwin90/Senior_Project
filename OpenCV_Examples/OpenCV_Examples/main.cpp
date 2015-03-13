@@ -25,7 +25,6 @@
 #include "opencv2/calib3d/calib3d.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/core/core.hpp"
 
 #include <vector>
 #include <string>
@@ -161,7 +160,7 @@ StereoCalib(const vector<string>& imagelist, Size boardSize, bool useCalibrated=
                 Mat timg;
                 if( scale == 1 )
                     timg = img;
-                
+
                 else
                     resize(img, timg, Size(), scale, scale);
                 found = findChessboardCorners(timg, boardSize, corners,
