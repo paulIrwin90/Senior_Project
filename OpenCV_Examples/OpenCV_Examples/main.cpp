@@ -21,10 +21,10 @@
  Issue tracker: http://code.opencv.org
  GitHub:        https://github.com/Itseez/opencv/
  ************************************************** */
-
 #include "opencv2/calib3d/calib3d.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/contrib/contrib.hpp"
 
 #include <vector>
 #include <string>
@@ -38,8 +38,41 @@
 using namespace cv;
 using namespace std;
 
+static void saveXYZ(const char* filename, const Mat& mat)
+{
+    const double max_z = 1.0e4;
+    FILE* fp = fopen(filename, "wt");
+    for(int y = 0; y < mat.rows; y++)
+    {
+        for(int x = 0; x < mat.cols; x++)
+        {
+            Vec3f point = mat.at<Vec3f>(y, x);
+            if(fabs(point[2] - max_z) < FLT_EPSILON || fabs(point[2]) > max_z) continue;
+            fprintf(fp, "%f %f %f\n", point[0], point[1], point[2]);
+        }
+    }
+    fclose(fp);
+}
 
-void stereoCap(Size boardsize)
+static bool readStringList( const string& filename, vector<string>& l )
+{
+    l.resize(0);
+    FileStorage fs(filename, FileStorage::READ);
+    if( !fs.isOpened() )
+        return false;
+    
+    FileNode n = fs.getFirstTopLevelNode();
+    if( n.type() != FileNode::SEQ )
+        return false;
+    
+    FileNodeIterator it = n.begin(), it_end = n.end();
+    for( ; it != it_end; ++it )
+        l.push_back((string)*it);
+    
+    return true;
+}
+
+static void stereoCalCap(Size boardsize)
 {
     VideoCapture capR(0), capL(1);
     Mat right, left, grayR, grayL;
@@ -54,11 +87,11 @@ void stereoCap(Size boardsize)
     string r = "Right";
     string l = "Left";
     
-    capR.set(CV_CAP_PROP_FRAME_HEIGHT, 700);
-    capR.set(CV_CAP_PROP_FRAME_WIDTH, 800);
+    //capR.set(CV_CAP_PROP_FRAME_HEIGHT, 700);
+    //capR.set(CV_CAP_PROP_FRAME_WIDTH, 800);
     
-    capL.set(CV_CAP_PROP_FRAME_HEIGHT, 700);
-    capL.set(CV_CAP_PROP_FRAME_WIDTH, 800);
+    //capL.set(CV_CAP_PROP_FRAME_HEIGHT, 700);
+    //capL.set(CV_CAP_PROP_FRAME_WIDTH, 800);
     
     while(count < numpairs)
     {
@@ -88,12 +121,12 @@ void stereoCap(Size boardsize)
             drawChessboardCorners(grayL, boardsize, cornersL, foundL);
         }
         
-        imshow("Right", grayR);
-        imshow("Left", grayL);
+        imshow("Calibrate Right", grayR);
+        imshow("Calibrate Left", grayL);
         
         k = waitKey(10);
         
-        if (k == 13 && foundR && foundL) // return
+        if (k == 13 )//&& foundR && foundL) // return
         {
             cout << "Found corners. Saving images.\n";
             fileR = path + r + to_string(count + 1) + ext;
@@ -113,9 +146,7 @@ void stereoCap(Size boardsize)
     destroyAllWindows();
 }
 
-
-static void
-StereoCalib(const vector<string>& imagelist, Size boardSize, bool useCalibrated=true, bool showRectified=true)
+static void stereoCalib(const vector<string>& imagelist, Size boardSize, bool useCalibrated=true, bool showRectified=true)
 {
     if( imagelist.size() % 2 != 0 )
     {
@@ -160,7 +191,7 @@ StereoCalib(const vector<string>& imagelist, Size boardSize, bool useCalibrated=
                 Mat timg;
                 if( scale == 1 )
                     timg = img;
-
+                
                 else
                     resize(img, timg, Size(), scale, scale);
                 found = findChessboardCorners(timg, boardSize, corners,
@@ -187,6 +218,7 @@ StereoCalib(const vector<string>& imagelist, Size boardSize, bool useCalibrated=
                 //char c = (char)waitKey(500);
                 //if( c == 27 || c == 'q' || c == 'Q' ) //Allow ESC to quit
                 //  exit(-1);
+                imwrite("/Users/vegas_bballer/Documents/Senior_Project/images/corners.jpg", cimg1);
                 waitKey(0);
             }
             else
@@ -396,23 +428,233 @@ StereoCalib(const vector<string>& imagelist, Size boardSize, bool useCalibrated=
     }
 }
 
-
-static bool readStringList( const string& filename, vector<string>& l )
+static void stereoCap()
 {
-    l.resize(0);
-    FileStorage fs(filename, FileStorage::READ);
-    if( !fs.isOpened() )
-        return false;
+    VideoCapture capR(0), capL(1);
+    Mat right, left;
     
-    FileNode n = fs.getFirstTopLevelNode();
-    if( n.type() != FileNode::SEQ )
-        return false;
+    string fileR, fileL;
+    string path = "/Users/vegas_bballer/Documents/Senior_Project/images/firstTest";
+    string ext = ".jpg";
+    string r = "Right";
+    string l = "Left";
+    int count = 0, numpics = 1, k;
     
-    FileNodeIterator it = n.begin(), it_end = n.end();
-    for( ; it != it_end; ++it )
-        l.push_back((string)*it);
+    //capR.set(CV_CAP_PROP_FRAME_HEIGHT, 700);
+    //capR.set(CV_CAP_PROP_FRAME_WIDTH, 800);
     
-    return true;
+    //capL.set(CV_CAP_PROP_FRAME_HEIGHT, 700);
+    //capL.set(CV_CAP_PROP_FRAME_WIDTH, 800);
+    
+    while(count < numpics)
+    {
+        //capR.read(right);
+        //capL.read(left);
+        
+        capR >> right;
+        capL >> left;
+        
+        //resize(right, right, Size(800, 700));
+        //resize(left, left, Size(800, 700));
+        
+        imshow("Capture Right", right);
+        imshow("Capture Left", left);
+        
+        k = waitKey(10);
+        
+        if (k == 13 ) // return key
+        {
+            cout << "Saving images.\n";
+            fileR = path + r + to_string(count + 1) + ext;
+            fileL = path + l + to_string(count + 1) + ext;
+            
+            imwrite(fileR, right);
+            imwrite(fileL, left);
+            count++;
+        }
+        
+        else if (k == 27) // esc
+        {
+            cout  << "Retrying image capture.\n";
+            destroyAllWindows();
+        }
+    }
+    destroyAllWindows();
+}
+
+int stereoMatch()
+{
+    const char* imgL_filename = "/Users/vegas_bballer/Documents/Senior_Project/images/firstTestLeft1.jpg";
+    const char* imgR_filename = "/Users/vegas_bballer/Documents/Senior_Project/images/firstTestRight1.jpg";
+    const char* intrinsic_filename = "/Users/vegas_bballer/Documents/Senior_Project/intrinsics.yml";
+    const char* extrinsic_filename = "/Users/vegas_bballer/Documents/Senior_Project/extrinsics.yml";
+    const char* disparity_filename = "/Users/vegas_bballer/Documents/Senior_Project/disparity.jpg";
+    const char* point_cloud_filename = "/Users/vegas_bballer/Documents/Senior_Project/pointcloud.jpg";
+    
+    enum
+    {
+        STEREO_BM   = 0,
+        STEREO_SGBM = 1,
+        STEREO_HH   = 2,
+        STEREO_VAR  = 3
+    };
+    
+    int alg = STEREO_SGBM;
+    int SADWindowSize = 19; // this is the block size, must be positive and odd...
+    int numberOfDisparities = 11 * 16; // must be divisible by 16
+    bool no_display = false;
+    float scale = 1.0; // must be positive floating point
+    
+    StereoBM bm;
+    StereoSGBM sgbm;
+    StereoVar var;
+    
+    int color_mode = alg == STEREO_BM ? 0 : -1; // if algorithm is StereoBM use 0 otherwise -1
+    Mat imgL = imread(imgL_filename, color_mode);
+    Mat imgR = imread(imgR_filename, color_mode);
+    
+    Size img_size = imgL.size();
+    Rect roi1, roi2;
+    Mat Q;
+    
+    if( intrinsic_filename )
+    {
+        // reading intrinsic parameters
+        FileStorage fs(intrinsic_filename, CV_STORAGE_READ);
+        if(!fs.isOpened())
+        {
+            printf("Failed to open file %s\n", intrinsic_filename);
+            return -1;
+        }
+        
+        Mat M1, D1, M2, D2;
+        fs["M1"] >> M1;
+        fs["D1"] >> D1;
+        fs["M2"] >> M2;
+        fs["D2"] >> D2;
+        
+        M1 *= scale;
+        M2 *= scale;
+        
+        fs.open(extrinsic_filename, CV_STORAGE_READ);
+        if(!fs.isOpened())
+        {
+            printf("Failed to open file %s\n", extrinsic_filename);
+            return -1;
+        }
+        
+        Mat R, T, R1, P1, R2, P2;
+        fs["R"] >> R;
+        fs["T"] >> T;
+        
+        stereoRectify( M1, D1, M2, D2, img_size, R, T, R1, R2, P1, P2, Q, CALIB_ZERO_DISPARITY, -1, img_size, &roi1, &roi2 );
+        
+        Mat map11, map12, map21, map22;
+        initUndistortRectifyMap(M1, D1, R1, P1, img_size, CV_16SC2, map11, map12);
+        initUndistortRectifyMap(M2, D2, R2, P2, img_size, CV_16SC2, map21, map22);
+        
+        Mat imgLr, imgRr;
+        remap(imgL, imgLr, map11, map12, INTER_LINEAR);
+        remap(imgR, imgRr, map21, map22, INTER_LINEAR);
+        
+        imgL = imgLr;
+        imgR = imgRr;
+    }
+    
+    numberOfDisparities = numberOfDisparities > 0 ? numberOfDisparities : ((img_size.width/8) + 15) & -16;
+    
+    bm.state->roi1 = roi1;
+    bm.state->roi2 = roi2;
+    bm.state->preFilterCap = 31;
+    bm.state->SADWindowSize = SADWindowSize > 0 ? SADWindowSize : 15;
+    bm.state->minDisparity = 0;
+    bm.state->numberOfDisparities = numberOfDisparities;
+    bm.state->textureThreshold = 10;
+    bm.state->uniquenessRatio = 15;
+    bm.state->speckleWindowSize = 0;
+    bm.state->speckleRange = 1;
+    bm.state->disp12MaxDiff = 1;
+    
+    sgbm.preFilterCap = 63;
+    sgbm.SADWindowSize = SADWindowSize > 0 ? SADWindowSize : 3;
+    
+    int cn = imgL.channels();
+    
+    sgbm.P1 = 8*cn*sgbm.SADWindowSize*sgbm.SADWindowSize;
+    sgbm.P2 = 32*cn*sgbm.SADWindowSize*sgbm.SADWindowSize;
+    sgbm.minDisparity = 0;
+    sgbm.numberOfDisparities = numberOfDisparities;
+    sgbm.uniquenessRatio = 30;
+    sgbm.speckleWindowSize = bm.state->speckleWindowSize;
+    sgbm.speckleRange = bm.state->speckleRange;
+    sgbm.disp12MaxDiff = 1;
+    sgbm.fullDP = alg == STEREO_SGBM;
+    
+    var.levels = 3;                                 // ignored with USE_AUTO_PARAMS
+    var.pyrScale = 0.5;                             // ignored with USE_AUTO_PARAMS
+    var.nIt = 25;
+    var.minDisp = -numberOfDisparities;
+    var.maxDisp = 0;
+    var.poly_n = 3;
+    var.poly_sigma = 0.0;
+    var.fi = 15.0f;
+    var.lambda = 0.03f;
+    var.penalization = var.PENALIZATION_TICHONOV;   // ignored with USE_AUTO_PARAMS
+    var.cycle = var.CYCLE_V;                        // ignored with USE_AUTO_PARAMS
+    var.flags = var.USE_SMART_ID | var.USE_AUTO_PARAMS | var.USE_INITIAL_DISPARITY | var.USE_MEDIAN_FILTERING ;
+    
+    Mat disp, disp8;
+    //Mat img1p, img2p, dispp;
+    //copyMakeBorder(img1, img1p, 0, 0, numberOfDisparities, 0, IPL_BORDER_REPLICATE);
+    //copyMakeBorder(img2, img2p, 0, 0, numberOfDisparities, 0, IPL_BORDER_REPLICATE);
+    
+    int64 t = getTickCount();
+    if( alg == STEREO_BM )
+        bm(imgL, imgR, disp);
+    else if( alg == STEREO_VAR ) {
+        var(imgL, imgR, disp);
+    }
+    else if( alg == STEREO_SGBM || alg == STEREO_HH )
+        sgbm(imgL, imgR, disp);
+    
+    t = getTickCount() - t;
+    printf("Time elapsed: %fms\n", t*1000/getTickFrequency());
+    
+    //disp = dispp.colRange(numberOfDisparities, img1p.cols);
+    if( alg != STEREO_VAR )
+        disp.convertTo(disp8, CV_8U, 255/(numberOfDisparities*16.));
+    else
+        disp.convertTo(disp8, CV_8U);
+    
+    if( !no_display )
+    {
+        //namedWindow("left", 1);
+        imshow("left", imgL);
+        //namedWindow("right", 1);
+        imshow("right", imgR);
+        //namedWindow("disparity", 0);
+        imshow("disparity", disp8);
+        
+        printf("press any key to continue...");
+        fflush(stdout);
+        waitKey();
+        printf("\n");
+    }
+    
+    if(disparity_filename)
+        imwrite(disparity_filename, disp8);
+    
+    if(point_cloud_filename)
+    {
+        printf("storing the point cloud...");
+        fflush(stdout);
+        Mat xyz;
+        reprojectImageTo3D(disp, xyz, Q, true);
+        saveXYZ(point_cloud_filename, xyz);
+        printf("\n");
+    }
+    
+    return 0;
 }
 
 int main()
@@ -430,8 +672,10 @@ int main()
         return -1;
     }
     
-    stereoCap(boardSize);
-    StereoCalib(imagelist, boardSize, false, showRectified);
+    stereoCalCap(boardSize);
+    stereoCalib(imagelist, boardSize, false, showRectified);
+    stereoCap();    // Get pictures to view disparity map
+    stereoMatch();  // Calculate a disparty map
     
     return 0;
 }
