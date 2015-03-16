@@ -398,27 +398,27 @@ static void stereoCalib(const vector<string>& imagelist, Size boardSize, bool us
             Mat img = imread(goodImageList[i*2+k], 0), rimg, cimg;
             remap(img, rimg, rmap[k][0], rmap[k][1], CV_INTER_LINEAR);
             cvtColor(rimg, cimg, COLOR_GRAY2BGR);
-            Mat canvasPart = !isVerticalStereo ? canvas(Rect(w*k, 0, w, h)) : canvas(Rect(0, h*k, w, h));
+            Mat canvasPart = canvas(Rect(w*k, 0, w, h));
             resize(cimg, canvasPart, canvasPart.size(), 0, 0, CV_INTER_AREA);
-            if( useCalibrated )
+            //if( useCalibrated )
             {
-                Rect vroi(cvRound(validRoi[k].x*sf), cvRound(validRoi[k].y*sf),
-                          cvRound(validRoi[k].width*sf), cvRound(validRoi[k].height*sf));
-                rectangle(canvasPart, vroi, Scalar(0,0,255), 3, 8);
+                //Rect vroi(cvRound(validRoi[k].x*sf), cvRound(validRoi[k].y*sf),
+                  //        cvRound(validRoi[k].width*sf), cvRound(validRoi[k].height*sf));
+                //rectangle(canvasPart, vroi, Scalar(0,0,255), 3, 8);
             }
         }
         
-        imshow("Rectified", canvas);
+        imshow("Rectified 1", canvas);
         waitKey(0);
         
-        if( !isVerticalStereo )
+        //if( !isVerticalStereo )
             for( j = 0; j < canvas.rows; j += 16 )
                 line(canvas, Point(0, j), Point(canvas.cols, j), Scalar(0, 255, 0), 1, 8);
-        else
-            for( j = 0; j < canvas.cols; j += 16 )
-                line(canvas, Point(j, 0), Point(j, canvas.rows), Scalar(0, 255, 0), 1, 8);
+        //else
+            //for( j = 0; j < canvas.cols; j += 16 )
+              //  line(canvas, Point(j, 0), Point(j, canvas.rows), Scalar(0, 255, 0), 1, 8);
         
-        imshow("Rectified", canvas);
+        imshow("Rectified 2", canvas);
         string file = "/Users/vegas_bballer/Documents/Senior_Project/rectified" + to_string(i + 1) + ".jpg";
         imwrite(file, canvas);
         
@@ -590,6 +590,18 @@ int stereoMatch()
     sgbm.disp12MaxDiff = 1;
     sgbm.fullDP = alg == STEREO_SGBM;
     
+    //sgbm.SADWindowSize = 5;
+    //sgbm.numberOfDisparities = 192;
+    //sgbm.preFilterCap = 4;
+    //sgbm.minDisparity = -64;
+    //sgbm.uniquenessRatio = 1;
+    //sgbm.speckleWindowSize = 150;
+    //sgbm.speckleRange = 2;
+    //sgbm.disp12MaxDiff = 10;
+    //sgbm.fullDP = false;
+    //sgbm.P1 = 600;
+    //sgbm.P2 = 2400;
+    
     var.levels = 3;                                 // ignored with USE_AUTO_PARAMS
     var.pyrScale = 0.5;                             // ignored with USE_AUTO_PARAMS
     var.nIt = 25;
@@ -672,10 +684,12 @@ int main()
         return -1;
     }
     
-    stereoCalCap(boardSize);
-    stereoCalib(imagelist, boardSize, false, showRectified);
-    stereoCap();    // Get pictures to view disparity map
-    stereoMatch();  // Calculate a disparty map
+    //stereoCalCap(boardSize);
+    //stereoCalib(imagelist, boardSize, false, showRectified);
+    //stereoCap();    // Get pictures to view disparity map
+    //stereoMatch();  // Calculate a disparty map
+    
+    
     
     return 0;
 }
