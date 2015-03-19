@@ -82,7 +82,7 @@ static void stereoCalCap(Size boardsize)
     bool foundR = false, foundL = false;
     
     string fileR, fileL;
-    string path = "/Users/vegas_bballer/Documents/Senior_Project/images/image";
+    string path = "/Users/vegas_bballer/Documents/Senior_Project/Testing/images/image";
     string ext = ".jpg";
     string r = "Right";
     string l = "Left";
@@ -154,7 +154,7 @@ static void stereoCalib(const vector<string>& imagelist, Size boardSize, bool us
         return;
     }
     
-    bool displayCorners = true;//true;
+    bool displayCorners = false;//true;
     const int maxScale = 2;
     const float squareSize = 1.f;  // Set this to your actual square size
     // ARRAY AND VECTOR STORAGE:
@@ -218,7 +218,7 @@ static void stereoCalib(const vector<string>& imagelist, Size boardSize, bool us
                 //char c = (char)waitKey(500);
                 //if( c == 27 || c == 'q' || c == 'Q' ) //Allow ESC to quit
                 //  exit(-1);
-                imwrite("/Users/vegas_bballer/Documents/Senior_Project/images/corners.jpg", cimg1);
+                imwrite("/Users/vegas_bballer/Documents/Senior_Project/Testing/images/corners.jpg", cimg1);
                 waitKey(0);
             }
             else
@@ -305,7 +305,7 @@ static void stereoCalib(const vector<string>& imagelist, Size boardSize, bool us
     cout << "average reprojection err = " <<  err/npoints << endl;
     
     // save intrinsic parameters
-    FileStorage fs("/Users/vegas_bballer/Documents/Senior_Project/intrinsics.yml", CV_STORAGE_WRITE);
+    FileStorage fs("/Users/vegas_bballer/Documents/Senior_Project/Testing/intrinsics.yml", CV_STORAGE_WRITE);
     if( fs.isOpened() )
     {
         fs << "M1" << cameraMatrix[0] << "D1" << distCoeffs[0] <<
@@ -323,7 +323,7 @@ static void stereoCalib(const vector<string>& imagelist, Size boardSize, bool us
                   imageSize, R, T, R1, R2, P1, P2, Q,
                   CALIB_ZERO_DISPARITY, 1, imageSize, &validRoi[0], &validRoi[1]);
     
-    fs.open("/Users/vegas_bballer/Documents/Senior_Project/extrinsics.yml", CV_STORAGE_WRITE);
+    fs.open("/Users/vegas_bballer/Documents/Senior_Project/Testing/extrinsics.yml", CV_STORAGE_WRITE);
     if( fs.isOpened() )
     {
         fs << "R" << R << "T" << T << "R1" << R1 << "R2" << R2 << "P1" << P1 << "P2" << P2 << "Q" << Q;
@@ -393,23 +393,26 @@ static void stereoCalib(const vector<string>& imagelist, Size boardSize, bool us
     
     for( i = 0; i < nimages; i++ )
     {
-        for( k = 0; k < 2; k++ )
+        for( k = 0; k < 2; k++ ) // left then right
         {
             Mat img = imread(goodImageList[i*2+k], 0), rimg, cimg;
+            
+            imshow("IMG", img);
+            waitKey(0);
+            
             remap(img, rimg, rmap[k][0], rmap[k][1], CV_INTER_LINEAR);
             cvtColor(rimg, cimg, COLOR_GRAY2BGR);
             Mat canvasPart = canvas(Rect(w*k, 0, w, h));
             resize(cimg, canvasPart, canvasPart.size(), 0, 0, CV_INTER_AREA);
             //if( useCalibrated )
             {
+                
                 //Rect vroi(cvRound(validRoi[k].x*sf), cvRound(validRoi[k].y*sf),
                   //        cvRound(validRoi[k].width*sf), cvRound(validRoi[k].height*sf));
                 //rectangle(canvasPart, vroi, Scalar(0,0,255), 3, 8);
             }
+            cout << i << " " << k << endl;
         }
-        
-        imshow("Rectified 1", canvas);
-        waitKey(0);
         
         //if( !isVerticalStereo )
             for( j = 0; j < canvas.rows; j += 16 )
@@ -418,9 +421,13 @@ static void stereoCalib(const vector<string>& imagelist, Size boardSize, bool us
             //for( j = 0; j < canvas.cols; j += 16 )
               //  line(canvas, Point(j, 0), Point(j, canvas.rows), Scalar(0, 255, 0), 1, 8);
         
-        imshow("Rectified 2", canvas);
-        string file = "/Users/vegas_bballer/Documents/Senior_Project/rectified" + to_string(i + 1) + ".jpg";
+        imshow("Rectified", canvas);
+        
+        
+        
+        string file = "/Users/vegas_bballer/Documents/Senior_Project/Testing/rectified" + to_string(i + 1) + ".jpg";
         imwrite(file, canvas);
+        
         
         char c = (char)waitKey();
         if( c == 27 || c == 'q' || c == 'Q' )
@@ -434,7 +441,7 @@ static void stereoCap()
     Mat right, left;
     
     string fileR, fileL;
-    string path = "/Users/vegas_bballer/Documents/Senior_Project/images/firstTest";
+    string path = "/Users/vegas_bballer/Documents/Senior_Project/Testing/images/firstTest";
     string ext = ".jpg";
     string r = "Right";
     string l = "Left";
@@ -484,12 +491,12 @@ static void stereoCap()
 
 int stereoMatch()
 {
-    const char* imgL_filename = "/Users/vegas_bballer/Documents/Senior_Project/images/firstTestLeft1.jpg";
-    const char* imgR_filename = "/Users/vegas_bballer/Documents/Senior_Project/images/firstTestRight1.jpg";
-    const char* intrinsic_filename = "/Users/vegas_bballer/Documents/Senior_Project/intrinsics.yml";
-    const char* extrinsic_filename = "/Users/vegas_bballer/Documents/Senior_Project/extrinsics.yml";
-    const char* disparity_filename = "/Users/vegas_bballer/Documents/Senior_Project/disparity.jpg";
-    const char* point_cloud_filename = "/Users/vegas_bballer/Documents/Senior_Project/pointcloud.jpg";
+    const char* imgL_filename = "/Users/vegas_bballer/Documents/Senior_Project/Testing/images/firstTestLeft1.jpg";
+    const char* imgR_filename = "/Users/vegas_bballer/Documents/Senior_Project/Testing/images/firstTestRight1.jpg";
+    const char* intrinsic_filename = "/Users/vegas_bballer/Documents/Senior_Project/Testing/intrinsics.yml";
+    const char* extrinsic_filename = "/Users/vegas_bballer/Documents/Senior_Project/Testing/extrinsics.yml";
+    const char* disparity_filename = "/Users/vegas_bballer/Documents/Senior_Project/Testing/disparity.jpg";
+    const char* point_cloud_filename = "/Users/vegas_bballer/Documents/Senior_Project/Testing/pointcloud.jpg";
     
     enum
     {
@@ -672,7 +679,7 @@ int stereoMatch()
 int main()
 {
     Size boardSize = Size(9, 6);
-    string imagelistfn = "/Users/vegas_bballer/Documents/Senior_Project/OpenCV_Examples/stereo_calib.xml";
+    string imagelistfn = "/Users/vegas_bballer/Documents/Senior_Project/Testing/stereo_calib.xml";
     bool showRectified = true;
     
     vector<string> imagelist;
@@ -685,7 +692,7 @@ int main()
     }
     
     //stereoCalCap(boardSize);
-    //stereoCalib(imagelist, boardSize, false, showRectified);
+    stereoCalib(imagelist, boardSize, false, showRectified);
     //stereoCap();    // Get pictures to view disparity map
     //stereoMatch();  // Calculate a disparty map
     

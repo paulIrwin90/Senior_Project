@@ -69,8 +69,8 @@ const int MAX_THRESH = 255;
 RNG rng(12345);
 int CURRENT_ID = 0;
 int PICTURE_ID = 0;
-string dir;
-string imgDir;
+string dir = "/Users/vegas_bballer/Documents/Senior_Project/Testing/";
+string imgDir = "images/";
 
 /*************************************************************
 * Function Declarations
@@ -88,7 +88,7 @@ int stereoMatch(Mat imgL, Mat imgR, string intrinsicFile, string extrinsicFile);
 void take_picture(Mat &img, int cam);
 void detect_and_measure(Mat &imgL, Mat &imgR, vector<piece> &piecesVec, string path);
 void export_data(vector<piece> &pz, string fileName, bool append);
-bool dirExists(const string&);
+//bool dirExists(const string&);
 string getFileName();
 string intToString(int integer, int width, char fill);
 
@@ -97,37 +97,38 @@ string intToString(int integer, int width, char fill);
 *************************************************************/
 int main(int argc, char** argv)
 {
-    cout << "Initializing INL BIO MATERIAL VOLUME CAMERA SENSOR" << endl;
-    cout << "Please enter a save location directory: ";
-    string save_location;
-    cin >> save_location;
-    string fileName;
+    //cout << "Initializing INL BIO MATERIAL VOLUME CAMERA SENSOR" << endl;
+    //cout << "Please enter a save location directory: ";
+    //string save_location;
+    //cin >> save_location;
+    string fileName = dir;
+    string save_location = dir;
     
 
     // Checks to see if this directory exists, if not it asks to create it
-    if (dirExists(save_location)) {
-        fileName = getFileName();
-        cout << "These measurements will be saved in " << fileName << endl;
-    }
-    else {
-        cout << "That directory doesn't exist. Would you like it created? (y/n): ";
-        char ans;
-        cin >> ans;
-        if ((ans == 'y') || (ans == 'Y')) {
-            if (!(_mkdir(save_location.c_str()))) {
-                cout << "Error in creating directory" << endl;
-                exit(EXIT_FAILURE);
-            }
-        }
-        else if ((ans == 'n') || (ans == 'N')) {
-            cout << "Exiting..." << endl;
-            exit(EXIT_SUCCESS);
-        }
-        else {
-            cout << "Option not recognized." << endl;
-            exit(EXIT_FAILURE);
-        }
-    }
+    //if (dirExists(save_location)) {
+    //    fileName = getFileName();
+    //    cout << "These measurements will be saved in " << fileName << endl;
+    //}
+    //else {
+    //    cout << "That directory doesn't exist. Would you like it created? (y/n): ";
+    //    char ans;
+    //    cin >> ans;
+    //    if ((ans == 'y') || (ans == 'Y')) {
+    //        if (!(_mkdir(save_location.c_str()))) {
+    //            cout << "Error in creating directory" << endl;
+    //            exit(EXIT_FAILURE);
+    //        }
+    //    }
+    //    else if ((ans == 'n') || (ans == 'N')) {
+    //        cout << "Exiting..." << endl;
+    //        exit(EXIT_SUCCESS);
+    //    }
+    //    else {
+    //        cout << "Option not recognized." << endl;
+    //        exit(EXIT_FAILURE);
+    //    }
+    //}
     
     // Tells the user what the excel file will be called
     cout << "Measurements will be published to " << fileName << endl;
@@ -143,33 +144,43 @@ int main(int argc, char** argv)
     // Takes the two pictures and saves them to a temporary file
     Mat left_ori_img;
     Mat right_ori_img;
+    
+    VideoCapture Left(LEFT_CAM);
+    VideoCapture Right(RIGHT_CAM);
 
     bool done = false;
+    cout << "Ready to take pictures?\n";
+    waitKey(0);
+    
+    cout << "Starting do...\n";
+    
     do
     {
-        take_picture(left_ori_img, LEFT_CAM);
-        take_picture(right_ori_img, RIGHT_CAM);
+        //take_picture(left_ori_img, LEFT_CAM);
+        //take_picture(right_ori_img, RIGHT_CAM);
     
         // Gets the zero-to-threshold images
-        Mat left_zero = left_ori_img;
-        Mat right_zero = right_ori_img;
+        //Mat left_zero = left_ori_img;
+        //Mat right_zero = right_ori_img;
     
+        Left >> left_ori_img;
+        Right >> right_ori_img;
+        
         // Performs stereo matching for disparity map
         stereoMatch(left_ori_img, right_ori_img, intrinsicFile, extrinsicFile);
     
         // Detects objects and records measurements into a struct
-        detect_and_measure(left_ori_img, right_ori_img, pieces, save_location);
+        //detect_and_measure(left_ori_img, right_ori_img, pieces, save_location);
+        destroyAllWindows();
         
     } while (!done);
 
     // Exports the data to an Excel file
     export_data(pieces, (save_location + "/" + fileName), false);
     
-    
-
     waitKey(0);
     
-    return(0);
+    return 0;
 }
 
 
@@ -259,9 +270,7 @@ void stereoCalibCapture(Size boardsize)
     //capL.set(CV_CAP_PROP_FRAME_WIDTH, 800);
     
     cout << "Starting calibration image capture.\n"
-         << "How many pairs of images would you like to capture? ";
-    cin >> numpairs;
-    cout << "To save image press 'return'.  -  To reset image press 'esc'.";
+         << "To save image press 'return'.  -  To reset image press 'esc'.\n";
         
     while(count < numpairs)
     {
@@ -324,7 +333,7 @@ void stereoCalibCapture(Size boardsize)
 //===========================================
 bool stereoCalib(const vector<string>& imagelist, Size boardSize, string intrinsicFile, string extrinsicFile)
 {
-    bool displayCorners = true;
+    bool displayCorners = false;
     const int maxScale = 2;
     const float squareSize = 1.f;  // Set this to your actual square size
     // ARRAY AND VECTOR STORAGE:
@@ -363,7 +372,7 @@ bool stereoCalib(const vector<string>& imagelist, Size boardSize, string intrins
                     timg = img;
                 else
                     resize(img, timg, Size(), scale, scale);
-                    found = findChessboardCorners(timg, boardSize, corners,
+                found = findChessboardCorners(timg, boardSize, corners,
                                               CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
                 if( found ) {
                     if( scale > 1 ) {
@@ -396,6 +405,8 @@ bool stereoCalib(const vector<string>& imagelist, Size boardSize, string intrins
             j++;
         }
     }
+    
+    destroyAllWindows();
     cout << j << " pairs have been successfully detected.\n";
     nimages = j;
     if( nimages < 2 ) {
@@ -497,11 +508,11 @@ bool stereoCalib(const vector<string>& imagelist, Size boardSize, string intrins
     // use intrinsic parameters of each camera, but
     // compute the rectification transformation directly
     // from the fundamental matrix
-
+    
     vector<Point2f> allimgpt[2];
     for( k = 0; k < 2; k++ ) {
         for( i = 0; i < nimages; i++ )
-            std::copy(imagePoints[k][i].begin(), imagePoints[k][i].end(), back_inserter(allimgpt[k]));
+            copy(imagePoints[k][i].begin(), imagePoints[k][i].end(), back_inserter(allimgpt[k]));
     }
     
     F = findFundamentalMat(Mat(allimgpt[0]), Mat(allimgpt[1]), FM_8POINT, 0, 0);
@@ -512,7 +523,7 @@ bool stereoCalib(const vector<string>& imagelist, Size boardSize, string intrins
     R2 = cameraMatrix[1].inv()*H2*cameraMatrix[1];
     P1 = cameraMatrix[0];
     P2 = cameraMatrix[1];
-
+    
     //Precompute maps for cv::remap()
     initUndistortRectifyMap(cameraMatrix[0], distCoeffs[0], R1, P1, imageSize, CV_16SC2, rmap[0][0], rmap[0][1]);
     initUndistortRectifyMap(cameraMatrix[1], distCoeffs[1], R2, P2, imageSize, CV_16SC2, rmap[1][0], rmap[1][1]);
@@ -521,21 +532,20 @@ bool stereoCalib(const vector<string>& imagelist, Size boardSize, string intrins
     double sf;
     int w, h;
     
-    sf = 300./MAX(imageSize.width, imageSize.height);
+    sf = 600./MAX(imageSize.width, imageSize.height);
     w = cvRound(imageSize.width*sf);
     h = cvRound(imageSize.height*sf);
-    canvas.create(h*2, w, CV_8UC3);
-
+    canvas.create(h, w*2, CV_8UC3);
     
-    for( i = 0; i < nimages; i++ )
+    
+    for( i = 0; i < nimages; i++ ) // Split picture into 2 to show rectification
     {
         for( k = 0; k < 2; k++ )
         {
             Mat img = imread(goodImageList[i*2+k], 0), rimg, cimg;
             remap(img, rimg, rmap[k][0], rmap[k][1], CV_INTER_LINEAR);
             cvtColor(rimg, cimg, COLOR_GRAY2BGR);
-
-            Mat canvasPart = canvas(Rect(w*k, 0, w, h));
+            Mat canvasPart = canvas( Rect(w*k, 0, w, h) );
             resize(cimg, canvasPart, canvasPart.size(), 0, 0, CV_INTER_AREA);
         }
         
@@ -547,11 +557,11 @@ bool stereoCalib(const vector<string>& imagelist, Size boardSize, string intrins
         imshow("Rectified", canvas);
         string file = dir + "rectified" + to_string(i + 1) + ".jpg";
         imwrite(file, canvas);
-        
         waitKey(0);
-        
     }
+    return true;
 }
+
 
 
 //===========================================
@@ -560,6 +570,7 @@ bool stereoCalib(const vector<string>& imagelist, Size boardSize, string intrins
 //===========================================
 int stereoMatch(Mat imgL, Mat imgR, string intrinsicFile, string extrinsicFile)
 {
+    cout << "Running stereo match\n";
     string disparity_filename = dir + "disparity.jpg";
     string point_cloud_filename = dir + "pointcloud.jpg";
     
@@ -752,18 +763,18 @@ int stereoMatch(Mat imgL, Mat imgR, string intrinsicFile, string extrinsicFile)
 // path to the directory
 // Returns: bool - true if exists
 //===========================================
-bool dirExists(const string& dirName_in)
-{
-    DWORD ftyp = GetFileAttributesA(dirName_in.c_str());
-    if (ftyp == INVALID_FILE_ATTRIBUTES)
-        return false; //something is wrong with your path!
+//bool dirExists(const string& dirName_in)
+//{
+//    DWORD ftyp = GetFileAttributesA(dirName_in.c_str());
+//    if (ftyp == INVALID_FILE_ATTRIBUTES)
+//        return false; //something is wrong with your path!
 
-    if (ftyp & FILE_ATTRIBUTE_DIRECTORY)
-        return true; // this is a directory!
+//    if (ftyp & FILE_ATTRIBUTE_DIRECTORY)
+//        return true; // this is a directory!
     
-    return false; // this is not a directory!
+//    return false; // this is not a directory!
     
-}
+//}
 
 
 //===========================================
@@ -824,7 +835,6 @@ void take_picture(Mat &img, int cam)
     else {
         webcam >> img;
     }
-    
 }
 
 
