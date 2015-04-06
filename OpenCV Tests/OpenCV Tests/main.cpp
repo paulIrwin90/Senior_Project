@@ -139,7 +139,7 @@ int main(int argc, char** argv)
     // Starts Calibration
     string intrinsicFile = dir + "intrinsics.yml";
     string extrinsicFile = dir + "extrinsics.yml";
-    calibration(intrinsicFile, extrinsicFile);
+    //calibration(intrinsicFile, extrinsicFile);
     
     // Takes the two pictures and saves them to a temporary file
     Mat left_ori_img;
@@ -150,7 +150,7 @@ int main(int argc, char** argv)
 
     bool done = false;
     cout << "Ready to take pictures?\n";
-    waitKey(0);
+    //waitKey(0);
     
     cout << "Starting do...\n";
     
@@ -163,6 +163,7 @@ int main(int argc, char** argv)
         //Mat left_zero = left_ori_img;
         //Mat right_zero = right_ori_img;
     
+        // Capture images to for disparity map
         Left >> left_ori_img;
         Right >> right_ori_img;
         
@@ -185,42 +186,50 @@ int main(int argc, char** argv)
 
 
 //===========================================
-//
-//
+// Function: calibration
+// Description: This is the driving function
+// behind the calibration of the stereo
+// cameras.
+// Parameters: file name strings for
+// values determined to rectify the images
+// Returns: int whether or not the function
+// calibrated the images correctly.
 //===========================================
 int calibration(string intrinsicFile, string extrinsicFile)
 {
     bool calibrated = false;
-    // Corners of Chessboard width y height
+    // Corners of Chessboard width by height
     Size boardSize = Size(9, 6);
     
-    // Capture the images and save to imgDir
+    // Capture the images and save to global imgDir
     stereoCalibCapture(boardSize);
     
     // Read file with pictures
     string imagelistfn = dir + "stereo_calib.xml";
     vector<string> imagelist;
     
+    // Error Checking
     imagelist.resize(0);
     FileStorage fs(imagelistfn, FileStorage::READ);
     if( !fs.isOpened() ) {
-        cout << "Error opening file " << imagelistfn << endl;
+        cout << "Error: Error opening file " << imagelistfn << endl;
         return -1;
     }
     
     FileNode n = fs.getFirstTopLevelNode();
     if( n.type() != FileNode::SEQ ) {
-        cout << "File type is incorrect.\n";
+        cout << "Error: File type is incorrect.\n";
         return -1;
     }
     
+    // Get each file path
     FileNodeIterator it = n.begin(), it_end = n.end();
     for( ; it != it_end; ++it ) {
         imagelist.push_back((string)*it);
     }
     
     if (imagelist.empty()) {
-        cout << "The string list is empty." << endl;
+        cout << "Error: The string list is empty." << endl;
         return -1;
     }
     else if( imagelist.size() % 2 != 0 ) {
@@ -231,7 +240,7 @@ int calibration(string intrinsicFile, string extrinsicFile)
         calibrated = stereoCalib(imagelist, boardSize, intrinsicFile, extrinsicFile);
     
     if (!calibrated) {
-        cout << "There was an error durning calibration.\n";
+        cout << "Error: There was an error durning calibration.\n";
         return -1;
     }
     else
@@ -242,8 +251,12 @@ int calibration(string intrinsicFile, string extrinsicFile)
 
 
 //===========================================
-//
-//
+// Function: stereoCalibCapture
+// Description: This function captures images
+// of the chessboard and saves them to the
+// global imgDir.
+// Parameters: Size of the board as type Size
+// Returns: none
 //===========================================
 void stereoCalibCapture(Size boardsize)
 {
@@ -262,24 +275,22 @@ void stereoCalibCapture(Size boardsize)
     string l = "Left";
     string ext = ".jpg";
     
-    // Set height and width of images
-    //capR.set(CV_CAP_PROP_FRAME_HEIGHT, 700);
-    //capR.set(CV_CAP_PROP_FRAME_WIDTH, 800);
+    // Set height and width of images - HD
+    capR.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
+    capR.set(CV_CAP_PROP_FRAME_WIDTH, 1280);
     
-    //capL.set(CV_CAP_PROP_FRAME_HEIGHT, 700);
-    //capL.set(CV_CAP_PROP_FRAME_WIDTH, 800);
+    capL.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
+    capL.set(CV_CAP_PROP_FRAME_WIDTH, 1280);
     
     cout << "Starting calibration image capture.\n"
          << "To save image press 'return'.  -  To reset image press 'esc'.\n";
         
-    while(count < numpairs)
+    // Numpairs is the number of right and left image pairs
+    // This while loop is for showing a video of the calibration finding the chessboard corners.
+    while (count < numpairs)
     {
         capR >> right;
         capL >> left;
-        
-        // Change image size
-        //resize(right, right, Size(800, 700));
-        //resize(left, left, Size(800, 700));
         
         cvtColor(right, grayR, CV_RGB2GRAY);
         cvtColor(left, grayL, CV_RGB2GRAY);
@@ -309,11 +320,13 @@ void stereoCalibCapture(Size boardsize)
         if (k == 13 )//&& foundR && foundL) // return
         {
             cout << "Found corners. Saving images.\n";
+            
+            // File paths for each image
             fileR = path + r + to_string(count + 1) + ext;
             fileL = path + l + to_string(count + 1) + ext;
-            
             imwrite(fileR, right);
             imwrite(fileL, left);
+            
             count++;
         }
         
@@ -328,12 +341,20 @@ void stereoCalibCapture(Size boardsize)
 
 
 //===========================================
-//
-//
+// Function: stereoCalib
+// Description: This function runs the
+// calibration technique for stereo images of
+// a chessboard.
+// Parameters: vector of image paths, size of
+// the chessboard, strings of values to
+// rectify the images
+// Returns: bool whether or not calibration
+// was successful.
 //===========================================
 bool stereoCalib(const vector<string>& imagelist, Size boardSize, string intrinsicFile, string extrinsicFile)
 {
-    bool displayCorners = false;
+    bool displayCorners = false; // this can be used to show which chessboard corners were found
+    bool showRectified = false; // this can be used to show the rectified images with epipolar lines
     const int maxScale = 2;
     const float squareSize = 1.f;  // Set this to your actual square size
     // ARRAY AND VECTOR STORAGE:
@@ -348,33 +369,33 @@ bool stereoCalib(const vector<string>& imagelist, Size boardSize, string intrins
     imagePoints[1].resize(nimages);
     vector<string> goodImageList;
     
-    for( i = j = 0; i <= nimages; i++ )
+    for ( i = j = 0; i <= nimages; i++ )
     {
-        for( k = 0; k < 2; k++ )
+        for ( k = 0; k < 2; k++ )
         {
-            const string& filename = imagelist[i*2+k];
+            const string& filename = imagelist[ i * 2 + k ];
             Mat img = imread(filename, 0);
-            if(img.empty())
+            if (img.empty())
                 break;
-            if( imageSize == Size() )
+            if ( imageSize == Size() )
                 imageSize = img.size();
-            else if( img.size() != imageSize )
+            else if ( img.size() != imageSize )
             {
                 cout << "The image " << filename << " has the size different from the first image size. Skipping the pair\n";
                 break;
             }
             bool found = false;
             vector<Point2f>& corners = imagePoints[k][j];
-            for( int scale = 1; scale <= maxScale; scale++ )
+            for ( int scale = 1; scale <= maxScale; scale++ )
             {
                 Mat timg;
-                if( scale == 1 )
+                if ( scale == 1 )
                     timg = img;
                 else
                     resize(img, timg, Size(), scale, scale);
-                found = findChessboardCorners(timg, boardSize, corners,
-                                              CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
-                if( found ) {
+                found = findChessboardCorners(timg, boardSize, corners, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
+                
+                if ( found ) {
                     if( scale > 1 ) {
                         Mat cornersMat(corners);
                         cornersMat *= 1./scale;
@@ -383,21 +404,22 @@ bool stereoCalib(const vector<string>& imagelist, Size boardSize, string intrins
                 }
             }
             if( displayCorners ) {
-                cout << "Showing " << filename << endl;
                 Mat cimg, cimg1;
+                
                 cvtColor(img, cimg, COLOR_GRAY2BGR);
                 drawChessboardCorners(cimg, boardSize, corners, found);
                 double sf = 640./MAX(img.rows, img.cols);
                 resize(cimg, cimg1, Size(), sf, sf);
+                
+                cout << "Showing " << filename << endl;
                 imshow("Chessboard Corners", cimg1);
                 waitKey(0);
             }
             else
-                putchar('.');
+                putchar('.'); // Success
             if( !found )
                 break;
-            cornerSubPix(img, corners, Size(11,11), Size(-1,-1),
-                         TermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 30, 0.01));
+            cornerSubPix(img, corners, Size(11,11), Size(-1,-1), TermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 30, 0.01));
         }
         if( k == 2 ) {
             goodImageList.push_back(imagelist[i*2]);
@@ -405,9 +427,9 @@ bool stereoCalib(const vector<string>& imagelist, Size boardSize, string intrins
             j++;
         }
     }
-    
     destroyAllWindows();
     cout << j << " pairs have been successfully detected.\n";
+    
     nimages = j;
     if( nimages < 2 ) {
         cout << "Error: too little pairs to run the calibration\n";
@@ -442,7 +464,7 @@ bool stereoCalib(const vector<string>& imagelist, Size boardSize, string intrins
                                  CV_CALIB_SAME_FOCAL_LENGTH +
                                  CV_CALIB_RATIONAL_MODEL +
                                  CV_CALIB_FIX_K3 + CV_CALIB_FIX_K4 + CV_CALIB_FIX_K5);
-    cout << "done with RMS error=" << rms << endl;
+    //cout << "done with RMS error=" << rms << endl;
     
     // CALIBRATION QUALITY CHECK
     // because the output fundamental matrix implicitly
@@ -452,7 +474,7 @@ bool stereoCalib(const vector<string>& imagelist, Size boardSize, string intrins
     double err = 0;
     int npoints = 0;
     vector<Vec3f> lines[2];
-    for( i = 0; i < nimages; i++ )
+    for ( i = 0; i < nimages; i++ )
     {
         int npt = (int)imagePoints[0][i].size();
         Mat imgpt[2];
@@ -462,7 +484,7 @@ bool stereoCalib(const vector<string>& imagelist, Size boardSize, string intrins
             undistortPoints(imgpt[k], imgpt[k], cameraMatrix[k], distCoeffs[k], Mat(), cameraMatrix[k]);
             computeCorrespondEpilines(imgpt[k], k+1, F, lines[k]);
         }
-        for( j = 0; j < npt; j++ )
+        for ( j = 0; j < npt; j++ )
         {
             double errij = fabs(imagePoints[0][i][j].x*lines[1][j][0] +
                                 imagePoints[0][i][j].y*lines[1][j][1] + lines[1][j][2]) +
@@ -472,7 +494,7 @@ bool stereoCalib(const vector<string>& imagelist, Size boardSize, string intrins
         }
         npoints += npt;
     }
-    cout << "average reprojection err = " <<  err/npoints << endl;
+    //cout << "average reprojection err = " <<  err/npoints << endl;
     
     // save intrinsic parameters
     FileStorage fs(intrinsicFile, CV_STORAGE_WRITE);
@@ -492,6 +514,7 @@ bool stereoCalib(const vector<string>& imagelist, Size boardSize, string intrins
                   imageSize, R, T, R1, R2, P1, P2, Q,
                   CALIB_ZERO_DISPARITY, 1, imageSize, &validRoi[0], &validRoi[1]);
     
+    // Save extrinsic parameters
     fs.open(extrinsicFile, CV_STORAGE_WRITE);
     if( fs.isOpened() )
     {
@@ -537,7 +560,6 @@ bool stereoCalib(const vector<string>& imagelist, Size boardSize, string intrins
     h = cvRound(imageSize.height*sf);
     canvas.create(h, w*2, CV_8UC3);
     
-    
     for( i = 0; i < nimages; i++ ) // Split picture into 2 to show rectification
     {
         for( k = 0; k < 2; k++ )
@@ -549,15 +571,16 @@ bool stereoCalib(const vector<string>& imagelist, Size boardSize, string intrins
             resize(cimg, canvasPart, canvasPart.size(), 0, 0, CV_INTER_AREA);
         }
         
-        // Epipolar lines
+        // draw Epipolar lines
         for( j = 0; j < canvas.rows; j += 16 )
             line(canvas, Point(0, j), Point(canvas.cols, j), Scalar(0, 255, 0), 1, 8);
         
-        
-        imshow("Rectified", canvas);
-        string file = dir + "rectified" + to_string(i + 1) + ".jpg";
-        imwrite(file, canvas);
-        waitKey(0);
+        if (showRectified) {
+            imshow("Rectified", canvas);
+            //string file = dir + "rectified" + to_string(i + 1) + ".jpg";
+            //imwrite(file, canvas);
+            waitKey(0);
+        }
     }
     return true;
 }
@@ -565,33 +588,33 @@ bool stereoCalib(const vector<string>& imagelist, Size boardSize, string intrins
 
 
 //===========================================
-//
-//
+// Function: stereoMatch
+// Description: This function uses one of the
+// block matching functions in OpenCV.
+// Parameters: Image Mats of left and right,
+// strings of file names of values to rectify
+// the images.
 //===========================================
 int stereoMatch(Mat imgL, Mat imgR, string intrinsicFile, string extrinsicFile)
 {
     cout << "Running stereo match\n";
     string disparity_filename = dir + "disparity.jpg";
-    string point_cloud_filename = dir + "pointcloud.jpg";
+    //string point_cloud_filename = dir + "pointcloud.jpg";
     
     // These are the possible algorithms
     enum
     {
         STEREO_BM   = 0,
         STEREO_SGBM = 1,
-        STEREO_HH   = 2,
-        STEREO_VAR  = 3
     };
     
     int alg = STEREO_SGBM;
     int SADWindowSize = 19; // this is the block size, must be positive and odd...
     int numberOfDisparities = 11 * 16; // must be divisible by 16
-    bool no_display = false;
-    float scale = 1.0; // must be positive floating point
-    
+    bool displayMatch = false;
+  
     StereoBM bm;
     StereoSGBM sgbm;
-    StereoVar var;
     
     int color_mode = alg == STEREO_BM ? 0 : -1; // if algorithm is StereoBM use 0 otherwise -1
     if (alg != STEREO_SGBM) {
@@ -610,7 +633,7 @@ int stereoMatch(Mat imgL, Mat imgR, string intrinsicFile, string extrinsicFile)
         FileStorage fs(intrinsicFile, CV_STORAGE_READ);
         if(!fs.isOpened())
         {
-            cout << "Failed to open file " << intrinsicFile << endl;
+            cout << "Error: Failed to open file " << intrinsicFile << endl;
             return -1;
         }
         
@@ -620,14 +643,11 @@ int stereoMatch(Mat imgL, Mat imgR, string intrinsicFile, string extrinsicFile)
         fs["M2"] >> M2;
         fs["D2"] >> D2;
         
-        M1 *= scale;
-        M2 *= scale;
-        
         // reading extrinsic parameters
         fs.open(extrinsicFile, CV_STORAGE_READ);
         if(!fs.isOpened())
         {
-            cout << "Failed to open file " << extrinsicFile << endl;
+            cout << "Error: Failed to open file " << extrinsicFile << endl;
             return -1;
         }
         
@@ -649,8 +669,6 @@ int stereoMatch(Mat imgL, Mat imgR, string intrinsicFile, string extrinsicFile)
         imgR = imgRr;
     }
     
-    numberOfDisparities = numberOfDisparities > 0 ? numberOfDisparities : ((img_size.width/8) + 15) & -16;
-    
     // Depending on which algorithm used
     bm.state->roi1 = roi1;
     bm.state->roi2 = roi2;
@@ -665,65 +683,46 @@ int stereoMatch(Mat imgL, Mat imgR, string intrinsicFile, string extrinsicFile)
     bm.state->disp12MaxDiff = 1;
     
     sgbm.preFilterCap = 63;
-    sgbm.SADWindowSize = SADWindowSize > 0 ? SADWindowSize : 3;
+    sgbm.SADWindowSize = 3;
     int cn = imgL.channels();
-    sgbm.P1 = 8 * cn * sgbm.SADWindowSize * sgbm.SADWindowSize;
-    sgbm.P2 = 32 * cn * sgbm.SADWindowSize * sgbm.SADWindowSize;
+    sgbm.P1 = 8 * cn * sgbm.SADWindowSize * sgbm.SADWindowSize; // typically around 3000
+    sgbm.P2 = 32 * cn * sgbm.SADWindowSize * sgbm.SADWindowSize; // typically around 12000
     sgbm.minDisparity = 0;
     sgbm.numberOfDisparities = numberOfDisparities;
     sgbm.uniquenessRatio = 30;
-    sgbm.speckleWindowSize = bm.state->speckleWindowSize;
-    sgbm.speckleRange = bm.state->speckleRange;
+    sgbm.speckleWindowSize = 0;
+    sgbm.speckleRange = 1;
     sgbm.disp12MaxDiff = 1;
-    sgbm.fullDP = alg == STEREO_SGBM;
+    sgbm.fullDP = false; // true takes longer but sometimes has better results
     
-    // Recommended from other source... not tested yet
-    //sgbm.SADWindowSize = 5;
-    //sgbm.numberOfDisparities = 192;
+    // Recommended from other source
     //sgbm.preFilterCap = 4;
+    //sgbm.SADWindowSize = 5;
+    //sgbm.P1 = 600;
+    //sgbm.P2 = 2400;
     //sgbm.minDisparity = -64;
+    //sgbm.numberOfDisparities = 192;
     //sgbm.uniquenessRatio = 1;
     //sgbm.speckleWindowSize = 150;
     //sgbm.speckleRange = 2;
     //sgbm.disp12MaxDiff = 10;
     //sgbm.fullDP = false;
-    //sgbm.P1 = 600;
-    //sgbm.P2 = 2400;
-    
-    var.levels = 3;                                 // ignored with USE_AUTO_PARAMS
-    var.pyrScale = 0.5;                             // ignored with USE_AUTO_PARAMS
-    var.nIt = 25;
-    var.minDisp = -numberOfDisparities;
-    var.maxDisp = 0;
-    var.poly_n = 3;
-    var.poly_sigma = 0.0;
-    var.fi = 15.0f;
-    var.lambda = 0.03f;
-    var.penalization = var.PENALIZATION_TICHONOV;   // ignored with USE_AUTO_PARAMS
-    var.cycle = var.CYCLE_V;                        // ignored with USE_AUTO_PARAMS
-    var.flags = var.USE_SMART_ID | var.USE_AUTO_PARAMS | var.USE_INITIAL_DISPARITY | var.USE_MEDIAN_FILTERING ;
     
     Mat disp, disp8;
     //Mat img1p, img2p, dispp;
     //copyMakeBorder(img1, img1p, 0, 0, numberOfDisparities, 0, IPL_BORDER_REPLICATE);
     //copyMakeBorder(img2, img2p, 0, 0, numberOfDisparities, 0, IPL_BORDER_REPLICATE);
     
-    if( alg == STEREO_BM )
+    if ( alg == STEREO_BM )
         bm(imgL, imgR, disp);
-    else if( alg == STEREO_VAR ) {
-        var(imgL, imgR, disp);
-    }
-    else if( alg == STEREO_SGBM || alg == STEREO_HH )
+    else if ( alg == STEREO_SGBM )
         sgbm(imgL, imgR, disp);
     
     
     //disp = dispp.colRange(numberOfDisparities, img1p.cols);
-    if( alg != STEREO_VAR )
-        disp.convertTo(disp8, CV_8U, 255/(numberOfDisparities*16.));
-    else
-        disp.convertTo(disp8, CV_8U);
+    disp.convertTo(disp8, CV_8U, 0.2); // The last number here can be changed
     
-    if( !no_display )
+    if( displayMatch )
     {
         //namedWindow("left", 1);
         imshow("left", imgL);
@@ -736,19 +735,8 @@ int stereoMatch(Mat imgL, Mat imgR, string intrinsicFile, string extrinsicFile)
         waitKey(0);
     }
     
-    if(disparity_filename != "")
+    if (disparity_filename != "")
         imwrite(disparity_filename, disp8);
-    
-    // This does not work yet
-    //if(point_cloud_filename != "")
-    //{
-        //printf("storing the point cloud...");
-        //fflush(stdout);
-        //Mat xyz;
-        //reprojectImageTo3D(disp, xyz, Q, true);
-        //saveXYZ(point_cloud_filename, xyz);
-        //printf("\n");
-    //}
     
     return 0;
 }

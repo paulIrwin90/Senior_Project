@@ -87,11 +87,11 @@ static void stereoCalCap(Size boardsize)
     string r = "Right";
     string l = "Left";
     
-    //capR.set(CV_CAP_PROP_FRAME_HEIGHT, 700);
-    //capR.set(CV_CAP_PROP_FRAME_WIDTH, 800);
+    capR.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
+    capR.set(CV_CAP_PROP_FRAME_WIDTH, 1280);
     
-    //capL.set(CV_CAP_PROP_FRAME_HEIGHT, 700);
-    //capL.set(CV_CAP_PROP_FRAME_WIDTH, 800);
+    capL.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
+    capL.set(CV_CAP_PROP_FRAME_WIDTH, 1280);
     
     while(count < numpairs)
     {
@@ -425,14 +425,15 @@ static void stereoCalib(const vector<string>& imagelist, Size boardSize, bool us
         
         
         
-        string file = "/Users/vegas_bballer/Documents/Senior_Project/Testing/rectified" + to_string(i + 1) + ".jpg";
-        imwrite(file, canvas);
+        //string file = "/Users/vegas_bballer/Documents/Senior_Project/Testing/rectified" + to_string(i + 1) + ".jpg";
+        //imwrite(file, canvas);
         
         
         char c = (char)waitKey();
         if( c == 27 || c == 'q' || c == 'Q' )
             break;
     }
+    destroyAllWindows();
 }
 
 static void stereoCap()
@@ -441,17 +442,17 @@ static void stereoCap()
     Mat right, left;
     
     string fileR, fileL;
-    string path = "/Users/vegas_bballer/Documents/Senior_Project/Testing/images/firstTest";
+    string path = "/Users/vegas_bballer/Documents/Senior_Project/Testing/images/capture";
     string ext = ".jpg";
     string r = "Right";
     string l = "Left";
-    int count = 0, numpics = 1, k;
+    int count = 0, numpics = 2, k;
     
-    //capR.set(CV_CAP_PROP_FRAME_HEIGHT, 700);
-    //capR.set(CV_CAP_PROP_FRAME_WIDTH, 800);
+    capR.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
+    capR.set(CV_CAP_PROP_FRAME_WIDTH, 1280);
     
-    //capL.set(CV_CAP_PROP_FRAME_HEIGHT, 700);
-    //capL.set(CV_CAP_PROP_FRAME_WIDTH, 800);
+    capL.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
+    capL.set(CV_CAP_PROP_FRAME_WIDTH, 1280);
     
     while(count < numpics)
     {
@@ -474,6 +475,7 @@ static void stereoCap()
             cout << "Saving images.\n";
             fileR = path + r + to_string(count + 1) + ext;
             fileL = path + l + to_string(count + 1) + ext;
+            cout << fileL << endl << fileR << endl;
             
             imwrite(fileR, right);
             imwrite(fileL, left);
@@ -491,8 +493,8 @@ static void stereoCap()
 
 int stereoMatch()
 {
-    const char* imgL_filename = "/Users/vegas_bballer/Documents/Senior_Project/Testing/images/firstTestLeft1.jpg";
-    const char* imgR_filename = "/Users/vegas_bballer/Documents/Senior_Project/Testing/images/firstTestRight1.jpg";
+    const char* imgL_filename = "/Users/vegas_bballer/Documents/Senior_Project/Testing/images/captureLeft1.jpg";
+    const char* imgR_filename = "/Users/vegas_bballer/Documents/Senior_Project/Testing/images/captureRight1.jpg";
     const char* intrinsic_filename = "/Users/vegas_bballer/Documents/Senior_Project/Testing/intrinsics.yml";
     const char* extrinsic_filename = "/Users/vegas_bballer/Documents/Senior_Project/Testing/extrinsics.yml";
     const char* disparity_filename = "/Users/vegas_bballer/Documents/Senior_Project/Testing/disparity.jpg";
@@ -568,7 +570,7 @@ int stereoMatch()
         imgR = imgRr;
     }
     
-    numberOfDisparities = numberOfDisparities > 0 ? numberOfDisparities : ((img_size.width/8) + 15) & -16;
+    //numberOfDisparities = numberOfDisparities > 0 ? numberOfDisparities : ((img_size.width/8) + 15) & -16;
     
     bm.state->roi1 = roi1;
     bm.state->roi2 = roi2;
@@ -582,20 +584,20 @@ int stereoMatch()
     bm.state->speckleRange = 1;
     bm.state->disp12MaxDiff = 1;
     
-    sgbm.preFilterCap = 63;
-    sgbm.SADWindowSize = SADWindowSize > 0 ? SADWindowSize : 3;
+    //sgbm.preFilterCap = 63;
+    //sgbm.SADWindowSize = SADWindowSize > 0 ? SADWindowSize : 3;
     
-    int cn = imgL.channels();
+    //int cn = imgL.channels();
     
-    sgbm.P1 = 8*cn*sgbm.SADWindowSize*sgbm.SADWindowSize;
-    sgbm.P2 = 32*cn*sgbm.SADWindowSize*sgbm.SADWindowSize;
-    sgbm.minDisparity = 0;
-    sgbm.numberOfDisparities = numberOfDisparities;
-    sgbm.uniquenessRatio = 30;
-    sgbm.speckleWindowSize = bm.state->speckleWindowSize;
-    sgbm.speckleRange = bm.state->speckleRange;
-    sgbm.disp12MaxDiff = 1;
-    sgbm.fullDP = alg == STEREO_SGBM;
+    //sgbm.P1 = 8*cn*sgbm.SADWindowSize*sgbm.SADWindowSize;
+    //sgbm.P2 = 32*cn*sgbm.SADWindowSize*sgbm.SADWindowSize;
+    //sgbm.minDisparity = 0;
+    //sgbm.numberOfDisparities = numberOfDisparities;
+    //sgbm.uniquenessRatio = 30;
+    //sgbm.speckleWindowSize = bm.state->speckleWindowSize;
+    //sgbm.speckleRange = bm.state->speckleRange;
+    //sgbm.disp12MaxDiff = 1;
+    //sgbm.fullDP = alg == STEREO_SGBM;
     
     //sgbm.SADWindowSize = 5;
     //sgbm.numberOfDisparities = 192;
@@ -608,6 +610,18 @@ int stereoMatch()
     //sgbm.fullDP = false;
     //sgbm.P1 = 600;
     //sgbm.P2 = 2400;
+    
+    sgbm.SADWindowSize = 5; //3
+    sgbm.numberOfDisparities = numberOfDisparities; //11*16
+    sgbm.preFilterCap = 80; //15
+    sgbm.minDisparity = 0; //5
+    sgbm.uniquenessRatio = 8; //20
+    sgbm.speckleWindowSize = 1000; //30
+    sgbm.speckleRange = 4; //2
+    sgbm.disp12MaxDiff = 0; //100
+    sgbm.fullDP = false; //true
+    sgbm.P1 = 3000; //200
+    sgbm.P2 = 10000; //3000
     
     var.levels = 3;                                 // ignored with USE_AUTO_PARAMS
     var.pyrScale = 0.5;                             // ignored with USE_AUTO_PARAMS
@@ -627,7 +641,7 @@ int stereoMatch()
     //copyMakeBorder(img1, img1p, 0, 0, numberOfDisparities, 0, IPL_BORDER_REPLICATE);
     //copyMakeBorder(img2, img2p, 0, 0, numberOfDisparities, 0, IPL_BORDER_REPLICATE);
     
-    int64 t = getTickCount();
+    //int64 t = getTickCount();
     if( alg == STEREO_BM )
         bm(imgL, imgR, disp);
     else if( alg == STEREO_VAR ) {
@@ -636,12 +650,15 @@ int stereoMatch()
     else if( alg == STEREO_SGBM || alg == STEREO_HH )
         sgbm(imgL, imgR, disp);
     
-    t = getTickCount() - t;
-    printf("Time elapsed: %fms\n", t*1000/getTickFrequency());
+    //t = getTickCount() - t;
+    //printf("Time elapsed: %fms\n", t*1000/getTickFrequency());
     
     //disp = dispp.colRange(numberOfDisparities, img1p.cols);
     if( alg != STEREO_VAR )
+    {
         disp.convertTo(disp8, CV_8U, 255/(numberOfDisparities*16.));
+        cout << 255/(numberOfDisparities * 16.) << endl;
+    }
     else
         disp.convertTo(disp8, CV_8U);
     
@@ -672,9 +689,10 @@ int stereoMatch()
         saveXYZ(point_cloud_filename, xyz);
         printf("\n");
     }
-    
+    destroyAllWindows();
     return 0;
 }
+
 
 int main()
 {
@@ -692,11 +710,159 @@ int main()
     }
     
     //stereoCalCap(boardSize);
-    stereoCalib(imagelist, boardSize, false, showRectified);
+    //stereoCalib(imagelist, boardSize, false, showRectified);
     //stereoCap();    // Get pictures to view disparity map
-    //stereoMatch();  // Calculate a disparty map
+    stereoMatch();  // Calculate a disparty map
+    //while(1)
+    {
+      //  return 0;
+    }
+    bool done = false;
+    int k = 0;
+    StereoSGBM sgbm;
+    Mat disp, disp8;
+    Mat imgL = imread("/Users/vegas_bballer/Documents/Senior_Project/Testing/images/captureLeft1.jpg");
+    Mat imgR = imread("/Users/vegas_bballer/Documents/Senior_Project/Testing/images/captureRight1.jpg");
+    string intrinsicFile = "/Users/vegas_bballer/Documents/Senior_Project/Testing/intrinsics.yml";
+    string extrinsicFile = "/Users/vegas_bballer/Documents/Senior_Project/Testing/extrinsics.yml";
+    //imshow("Right Image", imgR);
+    //imshow("Left Image", imgL);
     
+    Size img_size = imgL.size();
+    Rect roi1, roi2;
+    Mat Q;
     
+    // Get intrinsic and extrinsic parameters from files
+    if( intrinsicFile != "" )
+    {
+        // reading intrinsic parameters
+        FileStorage fs(intrinsicFile, CV_STORAGE_READ);
+        if(!fs.isOpened())
+        {
+            cout << "Failed to open file " << intrinsicFile << endl;
+            return -1;
+        }
+        
+        Mat M1, D1, M2, D2;
+        fs["M1"] >> M1;
+        fs["D1"] >> D1;
+        fs["M2"] >> M2;
+        fs["D2"] >> D2;
+        
+        // reading extrinsic parameters
+        fs.open(extrinsicFile, CV_STORAGE_READ);
+        if(!fs.isOpened())
+        {
+            cout << "Failed to open file " << extrinsicFile << endl;
+            return -1;
+        }
+        
+        Mat R, T, R1, P1, R2, P2;
+        fs["R"] >> R;
+        fs["T"] >> T;
+        
+        stereoRectify( M1, D1, M2, D2, img_size, R, T, R1, R2, P1, P2, Q, CALIB_ZERO_DISPARITY, -1, img_size, &roi1, &roi2 );
+        
+        Mat map11, map12, map21, map22;
+        initUndistortRectifyMap(M1, D1, R1, P1, img_size, CV_16SC2, map11, map12);
+        initUndistortRectifyMap(M2, D2, R2, P2, img_size, CV_16SC2, map21, map22);
+        
+        Mat imgLr, imgRr;
+        remap(imgL, imgLr, map11, map12, INTER_LINEAR);
+        remap(imgR, imgRr, map21, map22, INTER_LINEAR);
+        
+        //imshow("IMG LR",imgLr);
+        //waitKey(0);
+        //imshow("IMG L",imgL);
+        //waitKey(0);
+        //imshow("IMG RR",imgRr);
+        //waitKey(0);
+        //imshow("IMG R",imgR);
+        //waitKey(0);
+        
+        imgL = imgLr;
+        imgR = imgRr;
+    }
+    else
+        cout << "File not opened\n";
     
+    int scalar = 16;
+    const double SADWindowSize_max = 15;
+    const double numberOfDisparities_max = 20;
+    const double preFilterCap_max = 100;
+    const double uniquenessRatio_max = 50;
+    const double speckleWindowSize_max = 200;
+    const double speckleRange_max = 5;
+    const double disp12MaxDiff_max = 300;
+    const double P1_max = 4000;
+    const double P2_max = 12000;
+    
+    namedWindow("Stereo Tune");
+    
+    sgbm.SADWindowSize = 5; //3
+    sgbm.numberOfDisparities = scalar * 16; //11*16
+    sgbm.preFilterCap = 6; //15
+    sgbm.minDisparity = 0; //5
+    sgbm.uniquenessRatio = .08; //20
+    sgbm.speckleWindowSize = 30; //30
+    sgbm.speckleRange = 4; //2
+    sgbm.disp12MaxDiff = 0; //100
+    sgbm.fullDP = false; //true
+    sgbm.P1 = 3000; //200
+    sgbm.P2 = 12000; //3000
+    
+    createTrackbar("SAD Window Size",       "Stereo Tune", &sgbm.SADWindowSize,         SADWindowSize_max);
+    //createTrackbar("Number of Disparities", "Stereo Tune", &scalar,                     numberOfDisparities_max);
+    //sgbm.numberOfDisparities = scalar * 16;
+    createTrackbar("Pre Filter Cap",        "Stereo Tune", &sgbm.preFilterCap,          preFilterCap_max);
+    createTrackbar("Uniqueness Ratio",      "Stereo Tune", &sgbm.uniquenessRatio,       uniquenessRatio_max);
+    createTrackbar("Speckle Window Size",   "Stereo Tune", &sgbm.speckleWindowSize,     speckleWindowSize_max);
+    createTrackbar("Speckle Range",         "Stereo Tune", &sgbm.speckleRange,          speckleRange_max);
+    createTrackbar("disp12MaxDiff_Max",     "Stereo Tune", &sgbm.disp12MaxDiff,         disp12MaxDiff_max);
+    createTrackbar("P1",                    "Stereo Tune", &sgbm.P1,                    P1_max);
+    createTrackbar("P2",                    "Stereo Tune", &sgbm.P2,                    P2_max);
+    
+    //sgbm.preFilterCap = 63;
+    //sgbm.SADWindowSize = SADWindowSize > 0 ? SADWindowSize : 3; //19
+    //int cn = imgL.channels();
+    //sgbm.P1 = 8*cn*sgbm.SADWindowSize*sgbm.SADWindowSize; // 2888
+    //sgbm.P2 = 32*cn*sgbm.SADWindowSize*sgbm.SADWindowSize; // 11552
+    //sgbm.minDisparity = 0;
+    //sgbm.numberOfDisparities = numberOfDisparities; // 176
+    //sgbm.uniquenessRatio = 30; //or 10
+    //sgbm.speckleWindowSize = bm.state->speckleWindowSize; // 0
+    //sgbm.speckleRange = bm.state->speckleRange; // 1
+    //sgbm.disp12MaxDiff = 1;
+    //sgbm.fullDP = alg == STEREO_HH;
+    
+    while (!done)
+    {
+        cout << "while loop\n";
+        sgbm(imgL, imgR, disp);
+        imshow("Disp",disp);
+        disp.convertTo(disp8, CV_8U, 0.2);
+        
+        imshow("Left", imgL);
+        imshow("Right", imgR);
+        namedWindow("Disparity");
+        imshow("Disparity", disp8);
+        imwrite("/Users/vegas_bballer/Documents/Senior_Project/Testing/Output/disparity.jpg", disp8);
+        imwrite("/Users/vegas_bballer/Documents/Senior_Project/Testing/Output/rightImage.jpg", imgR);
+        imwrite("/Users/vegas_bballer/Documents/Senior_Project/Testing/Output/leftImage.jpg", imgL);
+        
+        waitKey(0);
+        //k = waitKey(10);
+        //if (k == 13)
+            //done = true;
+        
+    }
     return 0;
 }
+
+
+
+
+
+
+
+
